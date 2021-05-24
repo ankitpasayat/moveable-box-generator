@@ -1,6 +1,8 @@
-# moveable-box-generator
+# moveable-box-generator.herokuapp.com
 
 An app to generate new boxes and move those boxes using your keyboard keys.
+
+[Live Demo](https://moveable-box-generator.herokuapp.com)
 
 - Expected outcome and steps involved:
   - User gets to see a button to add a new box in the window. On clicking the button, a box is created with a unique number ID. Boxes are of fixed width and height.
@@ -20,7 +22,7 @@ This project was generated with [Angular CLI](https://github.com/angular/angular
 
 ## Install node modules
 
-Run `npm install` for installing dev dependencies.
+Alternatively, you can clone (or fork & clone) this repo and run `npm install` inside root directory for installing dev dependencies.
 
 ## Development server
 
