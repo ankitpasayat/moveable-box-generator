@@ -26,7 +26,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   private ctx: CanvasRenderingContext2D;
   private current: any;
-  private usedIDs = [];
+  private lastUsed: number = 0;
   listenerStatus: string = 'OFF';
   errorMsg: string = '';
 
@@ -39,8 +39,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.ctx = this.canvas.nativeElement.getContext('2d');
     // Will redraw canvas every 20ms
     setInterval(() => {
-      // Sorting by z-index.
-      this.boxes.sort((a, b) => (a.zIndex > b.zIndex ? 1 : -1));
       this.reDraw();
     }, 20);
   }
@@ -77,34 +75,27 @@ export class HomeComponent implements OnInit, OnDestroy {
     let newBox = new BoxComponent();
     newBox.init(0, 0, COLORS.defColor, DEFAULTS.sideLength, this.ctx);
     this.boxes.push(newBox);
-    // Calls funciton to set unique id which will be used as the z-index.
+    // Calls funciton to set unique id, to be used as the z-index.
     this.setZIndex();
   }
 
-  /*  Generates a random number between 1 to 99 (both inclusive).
-  Assures the same random number is not the z-index for another box. 
-  Stores the random number in a usedIDs array. */
+  /*  Generates a number which is the last used number +1.
+  This assures the same number is not the z-index for another box. 
+  Stores the generated number as the last used number. */
   setZIndex() {
-    while (true) {
-      let randomNumber = Math.trunc(Math.random() * 100);
-      if (!this.usedIDs.includes(randomNumber) && randomNumber > 0) {
-        this.boxes[this.boxes.length - 1].zIndex = randomNumber;
-        this.usedIDs.push(randomNumber);
-        break;
-      }
-    }
+    let generatedNumber = this.lastUsed + 1;
+    this.boxes[this.boxes.length - 1].zIndex = generatedNumber;
+    this.lastUsed = generatedNumber;
   }
 
   // Remove highlighted box object from array of objects.
   deleteThisBox() {
     if (this.current && this.current != '') {
       this.errorMsg = '';
-      for (let box in this.boxes) {
-        if (this.current == box) {
-          this.boxes.splice(this.boxes.indexOf(this.current), 1);
-          break;
-        }
-      }
+      // Generates new array of box objects where the selected box isn't present.
+      this.boxes = this.boxes.filter((box) => {
+        return box.color !== COLORS.highlightedColor;
+      });
       this.current = '';
     } else {
       this.errorMsg = 'Please select a box first!';
@@ -221,45 +212,38 @@ export class HomeComponent implements OnInit, OnDestroy {
   set to the mouse position relative to the canvas.
   Takes an event */
   handleMouseEvents(e: MouseEvent) {
-    let stylePaddingLeft =
-      parseInt(
-        document.defaultView.getComputedStyle(this.canvas.nativeElement, null)[
-          'paddingLeft'
-        ],
-        10
-      ) || 0;
-    let stylePaddingTop =
-      parseInt(
-        document.defaultView.getComputedStyle(this.canvas.nativeElement, null)[
-          'paddingTop'
-        ],
-        10
-      ) || 0;
-    let styleBorderLeft =
-      parseInt(
-        document.defaultView.getComputedStyle(this.canvas.nativeElement, null)[
-          'borderLeftWidth'
-        ],
-        10
-      ) || 0;
-    let styleBorderTop =
-      parseInt(
-        document.defaultView.getComputedStyle(this.canvas.nativeElement, null)[
-          'borderTopWidth'
-        ],
-        10
-      ) || 0;
-
     let element = this.canvas.nativeElement,
       offsetX = 0,
       offsetY = 0;
 
+    // Get Padding and Border for 'canvas.'
+    let stylePaddingLeft =
+      parseInt(
+        document.defaultView.getComputedStyle(element, null)['paddingLeft'],
+        10
+      ) || 0;
+    let stylePaddingTop =
+      parseInt(
+        document.defaultView.getComputedStyle(element, null)['paddingTop'],
+        10
+      ) || 0;
+    let styleBorderLeft =
+      parseInt(
+        document.defaultView.getComputedStyle(element, null)['borderLeftWidth'],
+        10
+      ) || 0;
+    let styleBorderTop =
+      parseInt(
+        document.defaultView.getComputedStyle(element, null)['borderTopWidth'],
+        10
+      ) || 0;
+
     // Compute the total offset.
-    if (this.canvas.nativeElement.offsetParent !== undefined) {
+    if (element.offsetParent !== undefined) {
       do {
-        offsetX += this.canvas.nativeElement.offsetLeft;
-        offsetY += this.canvas.nativeElement.offsetTop;
-      } while (element == this.canvas.nativeElement.offsetParent);
+        offsetX += element.offsetLeft;
+        offsetY += element.offsetTop;
+      } while (element == element.offsetParent);
     }
 
     /*     Add padding and border style widths to offset.
