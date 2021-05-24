@@ -216,21 +216,62 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
   }
 
-  // MouseClick Events for highlighting selected box.
+  /*   MouseClick Events for highlighting selected box.
+  Creates an object with x and y defined,
+  set to the mouse position relative to the canvas.
+  Takes an event */
   handleMouseEvents(e: MouseEvent) {
-    // Difference in relative pointer position (canvas to webpage)
-    let diff_x = e.pageX - e.offsetX;
-    let diff_y = e.pageY - e.offsetY;
+    let stylePaddingLeft =
+      parseInt(
+        document.defaultView.getComputedStyle(this.canvas.nativeElement, null)[
+          'paddingLeft'
+        ],
+        10
+      ) || 0;
+    let stylePaddingTop =
+      parseInt(
+        document.defaultView.getComputedStyle(this.canvas.nativeElement, null)[
+          'paddingTop'
+        ],
+        10
+      ) || 0;
+    let styleBorderLeft =
+      parseInt(
+        document.defaultView.getComputedStyle(this.canvas.nativeElement, null)[
+          'borderLeftWidth'
+        ],
+        10
+      ) || 0;
+    let styleBorderTop =
+      parseInt(
+        document.defaultView.getComputedStyle(this.canvas.nativeElement, null)[
+          'borderTopWidth'
+        ],
+        10
+      ) || 0;
 
-    this.pos_x = e.offsetX;
-    this.pos_y = e.offsetY;
-    // Getting mouse click offset and comparing to box (x, y) : (DEFAULTS.sideLength, DEFAULTS.sideLength).
-    if (
-      this.boxes &&
-      // Should be 30 taking into account canvas padding.
-      diff_x == 30 &&
-      diff_y == 30
-    ) {
+    let element = this.canvas.nativeElement,
+      offsetX = 0,
+      offsetY = 0;
+
+    // Compute the total offset.
+    if (this.canvas.nativeElement.offsetParent !== undefined) {
+      do {
+        offsetX += this.canvas.nativeElement.offsetLeft;
+        offsetY += this.canvas.nativeElement.offsetTop;
+      } while (element == this.canvas.nativeElement.offsetParent);
+    }
+
+    /*     Add padding and border style widths to offset.
+    This part is not strictly necessary, it depends on your styling. */
+    offsetX += stylePaddingLeft + styleBorderLeft;
+    offsetY += stylePaddingTop + styleBorderTop;
+
+    // Difference in relative pointer position (canvas to webpage).
+    this.pos_x = e.pageX - offsetX;
+    this.pos_y = e.pageY - offsetY;
+
+    if (this.boxes) {
       this.getSelectedBox(this.pos_x, this.pos_y);
     }
   }
